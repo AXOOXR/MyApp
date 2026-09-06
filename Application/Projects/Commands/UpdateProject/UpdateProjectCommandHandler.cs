@@ -2,11 +2,11 @@
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-
+using Application.Common.Results;
 namespace Application.Projects.Commands.UpdateProject;
 
 public class UpdateProjectCommandHandler
-    : IRequestHandler<UpdateProjectCommand, bool>
+    : IRequestHandler<UpdateProjectCommand, Result>
 {
     private readonly IApplicationDbContext _context;
 
@@ -16,7 +16,7 @@ public class UpdateProjectCommandHandler
         _context = context;
     }
 
-    public async Task<bool> Handle(
+    public async Task<Result> Handle(
         UpdateProjectCommand request,
         CancellationToken cancellationToken)
     {
@@ -26,7 +26,12 @@ public class UpdateProjectCommandHandler
                 cancellationToken);
 
         if (project is null)
-            return false;
+        {
+            return Result.Failure(
+                new Error(
+                    "Project.NotFound",
+                    "Project was not found."));
+        }
 
         project.UpdateName(request.Name);
 
@@ -37,6 +42,6 @@ public class UpdateProjectCommandHandler
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return true;
+        return Result.Success(1);
     }
 }

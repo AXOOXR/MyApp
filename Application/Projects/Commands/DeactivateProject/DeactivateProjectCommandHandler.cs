@@ -2,11 +2,11 @@ using Application.Abstractions;
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-
+using Application.Common.Results;
 namespace Application.Projects.Commands.DeactivateProject;
 
 public class DeactivateProjectCommandHandler
-    : IRequestHandler<DeactivateProjectCommand, bool>
+    : IRequestHandler<DeactivateProjectCommand, Result>
 {
     private readonly IApplicationDbContext _context;
 
@@ -16,7 +16,7 @@ public class DeactivateProjectCommandHandler
         _context = context;
     }
 
-    public async Task<bool> Handle(
+    public async Task<Result> Handle(
         DeactivateProjectCommand request,
         CancellationToken cancellationToken)
     {
@@ -26,7 +26,12 @@ public class DeactivateProjectCommandHandler
                 cancellationToken);
 
         if (project is null)
-            return false;
+        {
+            return Result.Failure(
+                new Error(
+                    "Project.NotFound",
+                    "Project was not found."));
+        }
 
         project.Deactivate();
 
@@ -37,6 +42,6 @@ public class DeactivateProjectCommandHandler
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return true;
+        return Result.Success(1);
     }
 }

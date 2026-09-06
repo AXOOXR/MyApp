@@ -93,8 +93,8 @@ public class ProjectsController : ControllerBase
             command,
             cancellationToken);
 
-        if (!result)
-            return NotFound();
+        if (result.IsFailure)
+            return NotFound(result.Error); 
 
         return NoContent();
     }
@@ -109,8 +109,8 @@ public class ProjectsController : ControllerBase
             new DeleteProjectCommand(id),
             cancellationToken);
 
-        if (!result)
-            return NotFound();
+        if (result.IsFailure)
+            return NotFound(result.Error);
 
         return NoContent();
     }
@@ -125,8 +125,8 @@ public class ProjectsController : ControllerBase
             new ActivateProjectCommand(id),
             cancellationToken);
 
-        if (!result)
-            return NotFound();
+        if (result.IsFailure)
+            return NotFound(result.Error);
 
         return NoContent();
     }
@@ -141,8 +141,8 @@ public class ProjectsController : ControllerBase
             new DeactivateProjectCommand(id),
             cancellationToken);
 
-        if (!result)
-            return NotFound();
+        if (result.IsFailure)
+            return NotFound(result.Error);
 
         return NoContent();
     }

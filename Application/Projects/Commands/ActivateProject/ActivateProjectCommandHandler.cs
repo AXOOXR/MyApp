@@ -1,4 +1,5 @@
 using Application.Abstractions;
+using Application.Common.Results;
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Projects.Commands.ActivateProject;
 
 public class ActivateProjectCommandHandler
-    : IRequestHandler<ActivateProjectCommand, bool>
+    : IRequestHandler<ActivateProjectCommand,Result >
 {
     private readonly IApplicationDbContext _context;
 
@@ -16,7 +17,7 @@ public class ActivateProjectCommandHandler
         _context = context;
     }
 
-    public async Task<bool> Handle(
+    public async Task<Result> Handle(
         ActivateProjectCommand request,
         CancellationToken cancellationToken)
     {
@@ -26,7 +27,13 @@ public class ActivateProjectCommandHandler
                 cancellationToken);
 
         if (project is null)
-            return false;
+        {
+            return Result.Failure(
+                new Error(
+                    "Project.NotFound",
+                    "Project was not found."));
+        }
+
 
         project.Activate();
 
@@ -37,6 +44,6 @@ public class ActivateProjectCommandHandler
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return true;
+        return Result.Success(1);
     }
 }

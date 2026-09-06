@@ -1,11 +1,12 @@
 ﻿using Application.Abstractions;
+using Application.Common.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Projects.Commands.DeleteProject;
 
 public class DeleteProjectCommandHandler
-    : IRequestHandler<DeleteProjectCommand, bool>
+    : IRequestHandler<DeleteProjectCommand, Result>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,7 +16,7 @@ public class DeleteProjectCommandHandler
         _context = context;
     }
 
-    public async Task<bool> Handle(
+    public async Task<Result> Handle(
         DeleteProjectCommand request,
         CancellationToken cancellationToken)
     {
@@ -25,12 +26,17 @@ public class DeleteProjectCommandHandler
                 cancellationToken);
 
         if (project is null)
-            return false;
+        {
+            return Result.Failure(
+                new Error(
+                    "Project.NotFound",
+                    "Project was not found."));
+        }
 
         _context.Projects.Remove(project);
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return true;
+        return Result.Success(1);
     }
 }

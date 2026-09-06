@@ -1,11 +1,12 @@
 ﻿using Application.Abstractions;
 using Domain;
 using MediatR;
+using Application.Common.Results;
 
 namespace Application.Projects.Commands.CreateProject;
 
 public class CreateProjectCommandHandler
-    : IRequestHandler<CreateProjectCommand, int>
+    : IRequestHandler<CreateProjectCommand, Result>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,11 +16,19 @@ public class CreateProjectCommandHandler
         _context = context;
     }
 
-    public async Task<int> Handle(
+    public async Task<Result> Handle(
         CreateProjectCommand request,
         CancellationToken cancellationToken)
     {
         var project = new Project(request.Name);
+
+        if (project is null)
+        {
+            return Result.Failure(
+                new Error(
+                    "Project.NotFound",
+                    "Project was not found."));
+        }
 
         _context.Projects.Add(project);
 
@@ -33,6 +42,7 @@ public class CreateProjectCommandHandler
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return project.Id;
+        return Result<Guid>.Success(project.Id);
+
     }
 }
